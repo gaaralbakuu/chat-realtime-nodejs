@@ -1,20 +1,23 @@
-import React, { useLayoutEffect } from "react";
-import PropTypes from "prop-types";
-import { useState } from "react";
+import React, { useMemo } from "react";
 
-function UsersConnected({
+function UsersInvite({
   users = [],
   user = {},
+  room = {},
   handleCloseUsers = () => {},
-  handleJoinRoom = () => {},
+  handleInviteJoinRoom = () => {},
 }) {
+  const list = useMemo(
+    () => users.filter((_user) => _user.room !== room.id),
+    [room, users]
+  );
 
   return (
     <div className="absolute inset-0 bg-black/5 z-[999] backdrop-blur-[1px] flex justify-center items-center py-10">
       <div className="max-w-md w-full bg-white rounded-xl shadow border border-solid border-gray-200 flex flex-col max-h-full">
         <div className="flex justify-between border-b border-solid border-gray-200">
           <div className="font-medium px-3 pb-4 py-5 text-2xl leading-3">
-            Users conneceted ({users.length})
+            Invite Users
           </div>
           <div>
             <div className="px-2 flex items-center justify-center h-full">
@@ -40,7 +43,7 @@ function UsersConnected({
         </div>
         <div className="px-3 py-2 flex-1 relative overflow-auto">
           <div className="inset-0">
-            {users.map((item, index) => {
+            {list.map((item, index) => {
               const isYou = item.id === user.id;
 
               return (
@@ -74,26 +77,28 @@ function UsersConnected({
                     </div>
                   </div>
                   <div className="flex items-center">
-                    {item.room && user.room !== item.room && (
+                    {user.room !== item.room && (
                       <button
-                        onClick={handleJoinRoom(item.room)}
+                        onClick={handleInviteJoinRoom(item.id, room.id)}
                         className="bg-sky-500 hover:bg-sky-600 text-white px-2 rounded-lg text-sm flex items-center gap-1 py-0.5"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
                           viewBox="0 0 24 24"
-                          fill="currentColor"
+                          strokeWidth={1.5}
+                          stroke="currentColor"
                           className="w-4 h-4"
                         >
                           <path
-                            fillRule="evenodd"
-                            d="M3.75 12a.75.75 0 01.75-.75h13.19l-5.47-5.47a.75.75 0 011.06-1.06l6.75 6.75a.75.75 0 010 1.06l-6.75 6.75a.75.75 0 11-1.06-1.06l5.47-5.47H4.5a.75.75 0 01-.75-.75z"
-                            clipRule="evenodd"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"
                           />
                         </svg>
 
                         <div className="pt-0.5">
-                          Join room {user.room !== item.room}
+                          Invite {user.room !== item.room}
                         </div>
                       </button>
                     )}
@@ -108,6 +113,4 @@ function UsersConnected({
   );
 }
 
-UsersConnected.propTypes = {};
-
-export default UsersConnected;
+export default UsersInvite;
