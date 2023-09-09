@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: din-round;
+  font-style: normal;
+  font-weight: 300;
+  src: url("./assets/fonts/bb252fafa44e15f86a9f.otf") format("opentype");
+}
+
+@font-face {
+  font-family: din-round;
+  font-style: normal;
+  font-weight: 400;
+  src: url("./assets/fonts/773375cc9ccd6167d89f.otf") format("opentype");
+}
+
+@font-face {
+  font-family: din-round;
+  font-style: normal;
+  font-weight: 500;
+  src: url("./assets/fonts/c8e0130767aef0f9eb8d.otf") format("opentype");
+}
+
+@font-face {
+  font-family: din-round;
+  font-style: normal;
+  font-weight: 700;
+  src: url("./assets/fonts/26bfa51c0d90d9ee1d0e.otf") format("opentype");
+}
+
+body{
+  font-family: "din-round", sans-serif;
+  font-weight: 300;
+}
