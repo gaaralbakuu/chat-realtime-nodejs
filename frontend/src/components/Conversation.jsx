@@ -1,19 +1,48 @@
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 // import 'react-virtualized/styles.css';
 import PropTypes from "prop-types";
 import { useState } from "react";
 import UsersConnected from "./UsersConnected";
 import ConversationLeftSide from "./ConversationLeftSide";
 import ConversationMessage from "./ConversationMessage";
+import ConversationConfirmInvate from "./ConversationConfirmInvate";
 
 function Conversation({ user = {}, users = [], rooms = [], socketRef = null }) {
   const [isShowUsers, setShowUsers] = useState(false);
+  const [isShowConfirm, setShowConfirm] = useState(false);
+  const [userInvite, setUserInvite] = useState([]);
 
-    useEffect(() => {
-      socketRef.current.on("invite-room", (roomId) => {
-        handleJoinRoom(roomId)();
-      })
-    }, []);
+  const getUserById = useCallback(
+    (id) => {
+      console.log(id, users)
+      return users.find((user) => user.id === id) ?? {};
+    },
+    [users]
+  );
+
+  useEffect(() => {
+    socketRef.current.on("invite-room", ({ roomId, userId }) => {
+      const user = getUserById(userId);
+      setUserInvite((_userInvite) => {
+        console.log(_userInvite);
+        if (
+          _userInvite.filter(
+            (item) => item.user.id === userId && roomId === item.room
+          ).length === 0
+        ) {
+          return [
+            ..._userInvite,
+            {
+              room: roomId,
+              user: user,
+            },
+          ];
+        }
+        return _userInvite;
+      });
+      setShowConfirm(true);
+    });
+  }, []);
 
   const handleCreateRoom = () => {
     socketRef.current.emit("create-room");
@@ -39,6 +68,10 @@ function Conversation({ user = {}, users = [], rooms = [], socketRef = null }) {
     setShowUsers(false);
   };
 
+  const handleCloseConfirmInvite = () => {
+    setShowConfirm(false);
+  };
+
   return (
     <>
       {isShowUsers && (
@@ -46,6 +79,13 @@ function Conversation({ user = {}, users = [], rooms = [], socketRef = null }) {
           users={users}
           user={user}
           handleCloseUsers={handleCloseUsers}
+          handleJoinRoom={handleJoinRoom}
+        />
+      )}
+      {isShowConfirm && (
+        <ConversationConfirmInvate
+          invites={userInvite}
+          handleCloseConfirmInvite={handleCloseConfirmInvite}
           handleJoinRoom={handleJoinRoom}
         />
       )}

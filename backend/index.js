@@ -164,8 +164,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("invite-room", ({ userId, roomId }) => {
-    io.to(userId).emit("invite-room", roomId);
-    console.log(userId, "invited", roomId);
+    io.to(userId).emit("invite-room", { userId: user.id, roomId });
   });
 
   socket.on("disconnect", () => {

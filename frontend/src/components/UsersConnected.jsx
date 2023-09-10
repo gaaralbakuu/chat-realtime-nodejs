@@ -10,7 +10,7 @@ function UsersConnected({
 }) {
 
   return (
-    <div className="absolute inset-0 bg-black/5 z-[999] backdrop-blur-[1px] flex justify-center items-center py-10">
+    <div className="absolute inset-0 bg-black/5 z-[999] backdrop-blur-[1px] flex justify-center items-center p-10">
       <div className="max-w-md w-full bg-white rounded-xl shadow border border-solid border-gray-200 flex flex-col max-h-full">
         <div className="flex justify-between border-b border-solid border-gray-200">
           <div className="font-medium px-3 pb-4 py-5 text-2xl leading-3">
