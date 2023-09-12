@@ -1,12 +1,14 @@
 import React, { useMemo } from "react";
+import { useSelector } from "react-redux";
 
 function UsersInvite({
-  users = [],
-  user = {},
   room = {},
   handleCloseUsers = () => {},
   handleInviteJoinRoom = () => {},
 }) {
+  const { users, rooms } = useSelector((state) => state.main);
+  const user = useSelector((state) => state.user);
+
   const list = useMemo(
     () => users.filter((_user) => _user.room !== room.id),
     [room, users]

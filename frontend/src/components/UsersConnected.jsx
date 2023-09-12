@@ -1,13 +1,14 @@
 import React, { useLayoutEffect } from "react";
 import PropTypes from "prop-types";
 import { useState } from "react";
+import { useSelector } from "react-redux";
 
 function UsersConnected({
-  users = [],
-  user = {},
   handleCloseUsers = () => {},
   handleJoinRoom = () => {},
 }) {
+  const { users } = useSelector((state) => state.main);
+  const user = useSelector((state) => state.user);
 
   return (
     <div className="absolute inset-0 bg-black/5 z-[999] backdrop-blur-[1px] flex justify-center items-center p-10">

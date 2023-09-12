@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { memo, useCallback, useContext, useEffect } from "react";
 // import 'react-virtualized/styles.css';
 import PropTypes from "prop-types";
 import { useState } from "react";
@@ -6,35 +6,39 @@ import UsersConnected from "./UsersConnected";
 import ConversationLeftSide from "./ConversationLeftSide";
 import ConversationMessage from "./ConversationMessage";
 import ConversationConfirmInvate from "./ConversationConfirmInvate";
+import { useSelector } from "react-redux";
+import socketContext from "../contexts/socketContext";
 
-function Conversation({ user = {}, users = [], rooms = [], socketRef = null }) {
+function Conversation() {
+  const { users, rooms } = useSelector((state) => state.main);
+  const user = useSelector((state) => state.user);
+
+  const socket = useContext(socketContext);
+
   const [isShowUsers, setShowUsers] = useState(false);
   const [isShowConfirm, setShowConfirm] = useState(false);
   const [userInvite, setUserInvite] = useState([]);
 
-  const getUserById = useCallback(
-    (id) => {
-      console.log(id, users)
-      return users.find((user) => user.id === id) ?? {};
-    },
-    [users]
-  );
+  const getUserById = (id) => {
+    console.log(users, rooms);
+    return users.find((_user) => _user.id === id) ?? {};
+  };
 
   useEffect(() => {
-    socketRef.current.on("invite-room", ({ roomId, userId }) => {
-      const user = getUserById(userId);
+    socket.on("invite-room", ({ roomId, userId }) => {
+      const _user = getUserById(userId);
+      console.log({ roomId, userId }, _user);
       setUserInvite((_userInvite) => {
-        console.log(_userInvite);
         if (
           _userInvite.filter(
-            (item) => item.user.id === userId && roomId === item.room
+            (item) => item.user.id === userId && roomId === item.room,
           ).length === 0
         ) {
           return [
             ..._userInvite,
             {
               room: roomId,
-              user: user,
+              user: _user,
             },
           ];
         }
@@ -42,21 +46,15 @@ function Conversation({ user = {}, users = [], rooms = [], socketRef = null }) {
       });
       setShowConfirm(true);
     });
-  }, []);
-
-  const handleCreateRoom = () => {
-    socketRef.current.emit("create-room");
-  };
+    return () => {
+      socket.off("invite-room");
+    };
+  }, [users]);
 
   const handleJoinRoom = (room) => {
     return () => {
-      socketRef.current.emit("join-room", room);
-    };
-  };
-
-  const handleInvateJoinRoom = (userId, roomId) => {
-    return () => {
-      socketRef.current.emit("invite-room", { userId, roomId });
+      setUserInvite(userInvite.filter(_userInvite => _userInvite.room !== room))
+      socket.emit("join-room", room);
     };
   };
 
@@ -92,18 +90,9 @@ function Conversation({ user = {}, users = [], rooms = [], socketRef = null }) {
       <div className="max-w-7xl w-full h-full py-10 px-3">
         <div className="flex h-full border-2 border-solid border-gray-300 rounded-lg shadow overflow-hidden">
           <ConversationLeftSide
-            rooms={rooms}
-            users={users}
-            user={user}
-            handleCreateRoom={handleCreateRoom}
             handleShowUsers={handleShowUsers}
-            handleJoinRoom={handleJoinRoom}
           />
           <ConversationMessage
-            rooms={rooms}
-            users={users}
-            user={user}
-            handleInvateJoinRoom={handleInvateJoinRoom}
           />
         </div>
       </div>
@@ -111,11 +100,6 @@ function Conversation({ user = {}, users = [], rooms = [], socketRef = null }) {
   );
 }
 
-Conversation.propTypes = {
-  user: PropTypes.object.isRequired,
-  users: PropTypes.array.isRequired,
-  rooms: PropTypes.array.isRequired,
-  socketRef: PropTypes.object.isRequired,
-};
+Conversation.propTypes = {};
 
 export default Conversation;

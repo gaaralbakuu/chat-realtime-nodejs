@@ -57,8 +57,7 @@ function handleSetUsername(io, socket, user, username) {
     io.to(user.id).emit("status-user", user);
   }
 
-  console.log("has set username");
-  console.log(initialData.users);
+  console.log(`\x1b[35m[${user.name}]\x1b[0m has set username: \x1b[33m${username}\x1b[0m`);
 }
 
 function handleCreateRoom(io, socket, user) {
@@ -80,9 +79,7 @@ function handleCreateRoom(io, socket, user) {
   io.emit("status-users", initialData.users);
   io.to(user.id).emit("status-user", user);
 
-  console.log("a room created");
-  // console.log(initialData.rooms);
-  console.log(initialData.users);
+  console.log(`\x1b[35m[${user.name}]\x1b[0m create a new room with id: \x1b[33m${id}\x1b[0m`);
 }
 
 function handleJoinRoom(io, socket, user, roomId) {
@@ -101,8 +98,7 @@ function handleJoinRoom(io, socket, user, roomId) {
     socket.join(roomId);
     io.emit("status-users", initialData.users);
 
-    console.log("user join room");
-    console.log(initialData.rooms);
+    console.log(`\x1b[35m[${user.name}]\x1b[0m user join room: \x1b[33m${roomId}\x1b[0m`);
   }
 }
 
@@ -119,15 +115,14 @@ function handleLeaveRoom(io, socket, user) {
     }
     initialData.rooms = tempRoom;
     io.emit("status-rooms", initialData.rooms);
-    console.log("user leave room");
-    console.log(initialData.rooms);
+    console.log(`\x1b[35m[${user.name}]\x1b[0m user leave room`);
   }
 
   user.room = null;
   socket.leave(user.room);
 }
 
-function handleStoreRoom() {}
+function handleStoreRoom() { }
 
 app.get("/", (req, res) => {
   res.send("Service startup complete");
@@ -139,7 +134,7 @@ io.on("connection", (socket) => {
   io.emit("status-users", initialData.users);
   io.emit("status-rooms", initialData.rooms);
   io.to(user.id).emit("status-user", user);
-  console.log("a user connected");
+  console.log(`\x1b[35m[server]\x1b[0m a user connected with id \x1b[33m${user.id}\x1b[0m`);
 
   socket.on("set-username", (username) => {
     handleSetUsername(io, socket, user, username);
@@ -150,21 +145,29 @@ io.on("connection", (socket) => {
       handleLeaveRoom(io, socket, user);
     }
     handleCreateRoom(io, socket, user);
-    console.log(user);
   });
 
   socket.on("join-room", (roomId) => {
-    if (roomId !== user.room) {
-      if (user.room) {
-        handleLeaveRoom(io, socket, user);
+    if (initialData.rooms.findIndex(_room => _room.id === roomId) > -1) {
+
+      if (roomId !== user.room) {
+        if (user.room) {
+          handleLeaveRoom(io, socket, user);
+        }
+        handleJoinRoom(io, socket, user, roomId);
       }
-      handleJoinRoom(io, socket, user, roomId);
+
+      io.to(user.id).emit("status-user", user);
+    } else {
+      io.to(user.id).emit("response", { type: "error", message: "Couldn't join room, because room not found" });
+      console.log(`\x1b[35m[${user.name}]\x1b Couldn't join room`);
     }
-    io.to(user.id).emit("status-user", user);
   });
 
   socket.on("invite-room", ({ userId, roomId }) => {
     io.to(userId).emit("invite-room", { userId: user.id, roomId });
+    io.to(user.id).emit("response", { type: "success", message: "Send invite success" });
+    console.log(`\x1b[35m[${user.name}]\x1b[0m Send invite \x1b[33m${roomId}\x1b[0m to \x1b[33m${userId}\x1b[0m`);
   });
 
   socket.on("disconnect", () => {
@@ -172,7 +175,7 @@ io.on("connection", (socket) => {
     handleUserDisconnected(user);
     io.emit("status-users", initialData.users);
     io.to(user.id).emit("status-user", user);
-    console.log("Client disconnected"); // Khi client disconnect thì log ra terminal.
+    console.log("\x1b[35m[server]\x1b[0m Client disconnected"); // Khi client disconnect thì log ra terminal.
   });
 });
 

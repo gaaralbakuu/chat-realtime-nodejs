@@ -71,7 +71,7 @@ function ConversationConfirmInvate({
                           />
                         </svg>
                       </div>
-                      <div className="p-1 rounded-lg hover:bg-green-500 hover:text-white cursor-pointer text-green-500">
+                      <div className="p-1 rounded-lg hover:bg-green-500 hover:text-white cursor-pointer text-green-500" onClick={handleJoinRoom(item.room)}>
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"

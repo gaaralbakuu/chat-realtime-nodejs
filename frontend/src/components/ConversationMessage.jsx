@@ -1,14 +1,22 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import PropTypes from "prop-types";
 import RenderAvatarConversation from "./RenderAvatarConversation";
 import UsersInvite from "./UsersInvite";
+import { useSelector } from "react-redux";
+import socketContext from "../contexts/socketContext";
+import toast from "react-hot-toast";
 
-function ConversationMessage({
-  rooms = [],
-  users = [],
-  user = {},
-  handleInvateJoinRoom = () => {},
-}) {
+function ConversationMessage() {
+  const socket = useContext(socketContext);
+  const { users, rooms } = useSelector((state) => state.main);
+  const user = useSelector((state) => state.user);
+
   const [isShowUsers, setShowUsers] = useState(false);
 
   const handleShowUsers = () => {
@@ -27,10 +35,6 @@ function ConversationMessage({
 
   const isJoined = useMemo(() => user.room, [user]);
 
-  useEffect(() => {
-    console.log(room);
-  }, [room]);
-
   const getUsers = useCallback(
     (list) => {
       if (list)
@@ -39,15 +43,19 @@ function ConversationMessage({
         });
       return [];
     },
-    [rooms, users]
+    [rooms, users],
   );
+
+  const handleInvateJoinRoom = (userId, roomId) => {
+    return () => {
+      socket.emit("invite-room", { userId, roomId });
+    };
+  };
 
   return (
     <>
       {isShowUsers && (
         <UsersInvite
-          users={users}
-          user={user}
           room={room}
           handleCloseUsers={handleCloseUsers}
           handleInviteJoinRoom={handleInvateJoinRoom}

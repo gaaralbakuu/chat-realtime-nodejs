@@ -1,28 +1,60 @@
-import React from "react";
+import React, { useMemo } from "react";
 import PropTypes from "prop-types";
 import { useState } from "react";
 import { useEffect } from "react";
 import { useRef } from "react";
 import { useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { setStateJoining, setStateUsername } from "../store/reducers/main";
+import toast from "react-hot-toast";
 
-function SetupUsername({ username, setUsername, onConfirm, error }) {
-  const [isShowError, setShowError] = useState(false);
+function SetupUsername() {
+  const {
+    state: { username },
+  } = useSelector((state) => state.main);
+
+  const dispatch = useDispatch();
 
   const handleClickEnter = (event) => {
     event.preventDefault();
-    setShowError(true);
-    onConfirm();
+    handleClickEnterJoin();
+  };
+
+  function checkingUsernameValid(username) {
+    if (username === "") {
+      return "Please enter a username";
+    } else if (username.length < 3) {
+      return "Username must be at least 3 characters long";
+    }
+    return "";
+  }
+
+  const handleClickEnterJoin = (event) => {
+    const validate = checkingUsernameValid(username);
+    if (validate) {
+      toast(validate, {
+        type: "error",
+        position: "top-center",
+        duration: 3000,
+      });
+    } else {
+      dispatch(setStateJoining(true));
+      toast("Choose username success", {
+        type: "success",
+        position: "top-center",
+        duration: 3000,
+      });
+    }
+  };
+
+  const handleSetStateUsername = (e) => {
+    dispatch(setStateUsername(e.target.value));
   };
 
   return (
     <div className="max-w-3xl w-full px-3">
       <h1 className="text-3xl font-normal mb-2">Welcome to conversation!</h1>
       <div className="mb-5">Set your username to get started</div>
-      {isShowError && error && (
-        <div className="mb-5 bg-red-100 border-2 border-solid border-red-100 text-red-700 max-w-sm w-full rounded-lg px-3 py-2 font-normal">
-          {error}
-        </div>
-      )}
       <form onSubmit={handleClickEnter}>
         <div className="max-w-sm w-full border-2 border-solid border-gray-300 bg-gray-100 rounded-xl mb-5">
           <input
@@ -31,9 +63,7 @@ function SetupUsername({ username, setUsername, onConfirm, error }) {
             placeholder="Username"
             spellCheck={false}
             value={username}
-            onChange={(e) => {
-              setUsername(e.target.value);
-            }}
+            onChange={handleSetStateUsername}
           />
         </div>
         <button
@@ -47,11 +77,6 @@ function SetupUsername({ username, setUsername, onConfirm, error }) {
   );
 }
 
-SetupUsername.propTypes = {
-  username: PropTypes.string,
-  setUsername: PropTypes.func.isRequired,
-  onConfirm: PropTypes.func.isRequired,
-  error: PropTypes.string,
-};
+SetupUsername.propTypes = {};
 
 export default SetupUsername;

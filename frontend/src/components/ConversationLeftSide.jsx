@@ -1,19 +1,18 @@
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useContext, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import "react-virtualized/styles.css";
 import RenderAvatarConversation from "./RenderAvatarConversation";
 import AutoSizer from "react-virtualized/dist/commonjs/AutoSizer";
 import List from "react-virtualized/dist/commonjs/List";
 import Scrollbars from "react-custom-scrollbars";
+import { useSelector } from "react-redux";
+import socketContext from "../contexts/socketContext";
 
-function ConversationLeftSide({
-  rooms = [],
-  users = [],
-  user = {},
-  handleCreateRoom = () => {},
-  handleShowUsers = () => {},
-  handleJoinRoom = () => {},
-}) {
+function ConversationLeftSide({ handleShowUsers = () => {} }) {
+  const socket = useContext(socketContext);
+  const { users, rooms } = useSelector((state) => state.main);
+  const user = useSelector((state) => state.user);
+
   const listRef = useRef();
   const scrollRef = useRef();
 
@@ -29,11 +28,21 @@ function ConversationLeftSide({
   const getUsersByRoom = useCallback(
     (index) => {
       return rooms[index].users.map(
-        (userId) => users.find((user) => user.id === userId).name ?? ""
+        (userId) => users.find((user) => user.id === userId).name ?? "",
       );
     },
-    [rooms, users]
+    [rooms, users],
   );
+
+  const handleCreateRoom = () => {
+    socket.emit("create-room");
+  };
+
+  const handleJoinRoom = (room) => {
+    return () => {
+      socket.emit("join-room", room);
+    };
+  };
 
   const rowRenderer = ({
     key, // Unique key within array of rows
